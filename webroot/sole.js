@@ -38,7 +38,6 @@ function init() {
     	
     	showQueryingIcon(resultElement);
 
-
     	// Wait for query to complete - before doing this?
     	// Perhaps hide it until query has completed.
     	editor.setValue('');
@@ -111,6 +110,8 @@ function init() {
     var postgresUri = 'postgres://testdb:password@localhost:5432/testdb';
     var soleWebSocketUri = 'ws://localhost:8080/session';
 
+    postgresUri = window.prompt('PostgreSQL URI', postgresUri);
+
     SoleClient.startSession(
     	soleWebSocketUri,
     	function(err) { alert(err); },
@@ -118,22 +119,30 @@ function init() {
 		    client.connect(
 		    	postgresUri,
 		    	function(err) { alert(msg); },
-		    	function() {
-		    		alert('connected');
+		    	function() {		    		
 		    		soleClient = client;
 		    		updateCompletion(soleClient);
 		    	});
    		});
-
-    //TODO Load database schema
-    CodeMirror.setSqlCompletions(["greg_was_here"]);
 };
 
 function updateCompletion(soleClient) {
 
-	function update(schema) {
-		alert(schema);
-		console.log(schema);
+	function update(db) {
+		var names = [];
+		names.push(db.name);
+		for (var i = 0, schema; schema = db.schemas[i]; i++) {
+			names.push(schema.name);
+			for (var j = 0, table; table = schema.tables[j]; j++) {
+				names.push(table.name);
+				for (var k = 0, col; col = table.columns[k]; k++) {
+					names.push(col.name);
+				}
+			}
+		}
+		CodeMirror.setSqlCompletions(names);
+
+		alert('connected');
 	}
 
 	soleClient.loadSchema(
