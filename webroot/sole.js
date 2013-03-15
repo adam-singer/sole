@@ -185,9 +185,10 @@ function SoleClient(ws) {
 		}
 
 		if (msg.type == 'error') {
-			if (scope.errorCallback)
-				scope.errorCallback(msg.msg);
+			var cb = scope.errorCallback;
 			scope._clearCallbacks();
+			if (cb)
+				cb(msg.msg);			
 			return;
 		}
 
@@ -204,9 +205,10 @@ function SoleClient(ws) {
 		if (scope.state == 'DB_CONNECTED' && msg.type == 'closed') {
 			scope.dbUri = null;
 			scope.state = 'WEB_SOCKET_CONNECTED';
-			if (scope.errorCallback)
-				scope.errorCallback('Connection closed.');
+			var cb = scope.errorCallback; 
 			scope._clearCallbacks();
+			if (cb)
+				cb('Connection closed.');
 			return;
 		}
 
@@ -222,13 +224,15 @@ function SoleClient(ws) {
 			if (scope.queryRowCallback)
 				scope.queryRowCallback(msg.data);
 		} else if (msg.type == 'query-complete') {
-			if (scope.queryDoneCallback)
-				scope.queryDoneCallback();
+			var cb = scope.queryDoneCallback;
 			scope._clearCallbacks();
+			if (cb)
+				cb(); //TODO pass rows affected.
 		} else if (msg.type == 'schema') {
-			if (scope.schemaDoneCallback)
-				scope.schemaDoneCallback(msg.schema);
+			var cb = scope.schemaDoneCallback;
 			scope._clearCallbacks();
+			if (cb)
+				cb(msg.schema);
 		} else {
 			console.error('Unknown message type: ' + msg.type);
 		}
