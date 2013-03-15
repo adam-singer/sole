@@ -10,4 +10,6 @@ Then browse to http://localhost:8080
 
 Enter a postgresql database uri in the ugly prompt.
 
-Hit ctrl-space to get auto-completions based on table and column names in your schema.
+Ctrl-enter to submit a query.
+
+Ctrl-space to get auto-completions based on table and column names in your schema.
