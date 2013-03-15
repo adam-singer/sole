@@ -57,6 +57,12 @@ class _SoleSession {
 					onError: (e) => _sendError('Query error: $e'),
 					onDone: () => _send({'type': 'query-complete'}));
 
+			} else if (jsonObj['type'] == 'load-schema') {
+
+				_remote.loadSchema()
+				  .then((schema) => _send({'type': 'schema', 'schema': schema}))
+				  .catchError((e) => _sendError('Load schema failed: $e'));
+
 			} else {
 				throw Ex();
 			}
@@ -80,6 +86,7 @@ class _SoleSession {
 	}
 
 	_sendError(String msg) {
+		print('Send error: $msg');
 		_socket.send(json.stringify({'type': 'error', 'msg': msg}));
 	}
 
@@ -130,7 +137,96 @@ class _SoleRemoteApi {
 		return _conn.query(sql);
 	}
 
-	Future<Map> schema() {
-		return new Future.immediateError('Not implemented.');
+	Future loadSchema() {
+		if (_conn == null)
+			return new Future.immediateError('Not connected.');
+
+		final sqlDbName = 'select catalog_name from information_schema.information_schema_catalog_name';
+
+		final sqlColumns = r'''
+select
+	table_schema,
+	table_name,
+	column_name,
+	ordinal_position,
+	column_default,
+	is_nullable,
+	data_type,
+	character_maximum_length,
+	numeric_precision,
+	numeric_scale,
+	numeric_precision_radix
+from information_schema.columns
+where table_schema not in ('information_schema', 'pg_catalog')
+order by table_schema, table_name, ordinal_position;
+''';
+
+		var db = new Database();
+
+		// Could be set to null while the queries are running so make a local copy.
+		var c = _conn;
+
+		// First lookup database name
+		return c.query(sqlDbName).single
+			.then((r) => db.name = r.catalog_name)
+			.then((_) {
+				// Then lookup schemas, tables, columns
+				return c.query(sqlColumns).toList().then((list) {
+					var schema;
+					var table;
+					for (var row in list) {
+						if (schema == null || schema.name != row.table_schema) {
+							schema = new Schema()..name = row.table_schema;
+							db.schemas.add(schema);
+						}
+
+						if (table == null || table.name != row.table_name) {
+							table = new Table()..name = row.table_name;
+							schema.tables.add(table);
+						}
+						
+						table.columns.add(new Column()
+							..name = row.column_name); //TODO add other properties.
+					}
+				});
+			})
+			.then((_) {
+				return db.toJson();
+			});
 	}
+}
+
+class Database {
+	String name;
+	List<Schema> schemas = new List<Schema>();
+	toJson() => {'name': name, 'schemas': schemas.map((v) => v.toJson()).toList()};
+}
+
+class Schema {
+	String name;
+	List<Table> tables = new List<Table>();
+	toJson() => {'name': name, 'tables': tables.map((v) => v.toJson()).toList()};
+}
+
+class Table {
+	String name;
+	List<Column> columns = new List<Column>();
+	toJson() => {'name': name, 'columns': columns.map((v) => v.toJson()).toList()};
+}
+
+class Column {
+	String name;
+	//bool isNullable; etc...
+	toJson() => {'name': name};
+
+	/*
+	ordinal_position,
+	column_default,
+	is_nullable,
+	data_type,
+	character_maximum_length,
+	numeric_precision,
+	numeric_scale,
+	numeric_precision_radix
+	*/
 }

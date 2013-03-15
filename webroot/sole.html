@@ -41,8 +41,11 @@
 			};
 
 			query('#close').onclick = function() {
-				var sql = query('#text').value;
 				ws.send(JSON.stringify({'type': 'close'}));
+			};
+
+			query('#load-schema').onclick = function() {
+				ws.send(JSON.stringify({'type': 'load-schema'}));
 			};
 		}
 	</script>
@@ -53,6 +56,7 @@
 <body>
 	<div>
 		<button id="connect">Connect</button>
+		<button id="load-schema">Load Schema</button>
 		<button id="run">Run</button>
 		<button id="close">Close</button>
 	</div>
