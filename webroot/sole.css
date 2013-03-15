@@ -1,5 +1,6 @@
 body {
 	margin: 0px;
+	font-family: sans-serif;	
 }
 
 .CodeMirror {
@@ -19,4 +20,36 @@ body {
 
 #history .CodeMirror-cursor {
 	display: none;
+}
+
+#history .query {
+}
+
+#history .result {
+}
+
+#history .result .querying {
+	width: 20px;
+	height: 20px;
+	background-color: green; //TODO find a nice spinning icon image.
+}
+
+#history .result table {
+	margin: 10px;
+	border-collapse: collapse;
+}
+
+#history .result table th  {
+	background-color: #ccccff;
+}
+
+#history .result table td, #history .result table th  {
+	border: 1px solid #cccccc;
+	padding: 3px 6px 3px 6px;
+}
+
+#history .result .error {
+	border: 1px solid #cc3333;
+	background-color: #eecccc;
+	margin: 10px;
 }

@@ -54,10 +54,19 @@ class _SoleSession {
 				if (jsonObj['sql'] == null || !(jsonObj['sql'] is String))
 					throw Ex();
 
+				bool firstRow = true;
+
 				_remote.query(jsonObj['sql']).listen(
 					(row) {
+						if (firstRow) {
+							firstRow = false;
+							var columns = new List();
+							row.forEach((k, _) => columns.add(k));							
+							_send({'type': 'row-header', 'columns': columns});
+						}
+
 						var values = new List();
-						row.forEach((_, v) => values.add(v));					
+						row.forEach((_, v) => values.add(v));
 						_send({'type': 'row', 'data': values});
 					},
 					onError: (e) => _sendError('Query error: $e'),
