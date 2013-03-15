@@ -1,0 +1,5 @@
+name: pginspect_server
+description: A sample command-line application
+dependencies:
+  postgresql:
+    git: git://github.com/xxgreg/postgresql.git
