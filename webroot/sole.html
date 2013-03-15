@@ -30,18 +30,32 @@
 				console.log('Web socket closed.');
 			};
 
-			query('#send').onclick = function() {
-				var val = query('#text').value;
-				ws.send(val);
+			query('#run').onclick = function() {
+				var sql = query('#text').value;
+				ws.send(JSON.stringify({'type': 'query', 'sql': sql}));
+			};
+
+			query('#connect').onclick = function() {
+				var msg = JSON.stringify({'type': 'connect', 'uri': 'postgres://testdb:password@localhost:5432/testdb'});
+				ws.send(msg);
+			};
+
+			query('#close').onclick = function() {
+				var sql = query('#text').value;
+				ws.send(JSON.stringify({'type': 'close'}));
 			};
 		}
 	</script>
 	<style>
-		#text { display: block; }
+		#text { display: block; width: 600px; height: 600px;}
 	</style>
 </head>
 <body>
-	<textarea id="text"></textarea>
-	<button id="send">Send</button>
+	<div>
+		<button id="connect">Connect</button>
+		<button id="run">Run</button>
+		<button id="close">Close</button>
+	</div>
+	<textarea id="text"></textarea>	
 </body>
 </html>

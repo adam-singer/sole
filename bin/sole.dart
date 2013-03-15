@@ -1,4 +1,12 @@
+library sole;
+
+import 'dart:async';
 import 'dart:io';
+import 'dart:json' as json;
+import 'package:postgresql/postgresql.dart' as pg;
+
+part 'sole_session.dart';
+
 
 main() {
   var port = 8080;
@@ -17,7 +25,7 @@ handleRequest(HttpRequest request) {
 	
 	// Handle web socket request.
 	if (path == '/session') {
-		WebSocketTransformer.upgrade(request).then((ws) => new _Session(ws));
+		WebSocketTransformer.upgrade(request).then((ws) => new _SoleSession(ws));
 		return;
 	}
 
@@ -31,44 +39,10 @@ handleRequest(HttpRequest request) {
 		}
 
 	} else {
-		safePath = 'webroot/web_socket_example.html';
+		safePath = 'webroot/sole.html';
 	}
 
 	sendFileSync(request, safePath);
-}
-
-class _Session {
-	WebSocket _socket;
-	//StreamSubscription _subs;
-
-	_Session(this._socket) {
-		//_subs =
-		_socket.listen(_handleData, onError: _handleError, onDone: _handleDone);
-	}
-
-	_handleData(data) {
-		if (data is String)
-			_handleTextData(data);
-		else if (data is List<int>)
-			_handleBinaryData(data);
-	}
-
-	_handleTextData(String data) {
-		print('Text data received: $data');
-		_socket.send('Echo: $data');
-	}
-
-	_handleBinaryData(List<int> data) {
-		print('Binary data received, length: ${data.length}.');
-	}
-
-	_handleError(error) {
-		print('Websocket error: $error');
-	}
-
-	_handleDone() {
-		print('Websocket closed.');
-	}
 }
 
 sendFileSync(HttpRequest request, String path) {
