@@ -29,15 +29,21 @@ class _SoleSession {
 
 			if (jsonObj == null || !(jsonObj is Map) || jsonObj['type'] == null) {
 				throw Ex();
-			
-			} else if (jsonObj['type'] == 'connect') {
+			} else {
+				print('Received: $data');
+			}
+
+			if (jsonObj['type'] == 'connect') {
 				if (jsonObj['uri'] == null || !(jsonObj['uri'] is String)) {
 					throw Ex();
 				}
 
 				_remote.connect(jsonObj['uri'])
 				  .then((_) => _send({'type': 'connected', 'uri': jsonObj['uri']}))
-				  .catchError((e) => _sendError('Connect failed: $e'));
+				  .catchError((e) {
+				  	_sendError('Connect failed: $e');
+				  	_send({'type': 'closed'});
+				  });
 			
 			} else if (jsonObj['type'] == 'close') {
 
@@ -91,7 +97,9 @@ class _SoleSession {
 	}
 
 	_send(Object msg) {
-		_socket.send(json.stringify(msg));
+		var s = json.stringify(msg);
+		print('Sent: $s');
+		_socket.send(s);
 	}
 }
 

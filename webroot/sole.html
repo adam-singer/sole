@@ -2,64 +2,18 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>Web socket example</title>
-	<script>
-		window.onload = init;
-
-		function query(q) {
-			return document.querySelector(q);
-		}
-
-		function init() {
-
-			var ws = new WebSocket("ws://localhost:8080/session", ["pginspect"]);
-
-			ws.onopen = function() {
-				console.log('Web socket connected.');
-			};
-
-			ws.onmessage = function(event) {
-				console.log('Received data from web socket: "' + event.data + '"', event);
-			};
-
-			ws.onerror = function(error) {
-				console.log('Web socket error: ' + error);
-			};
-
-			ws.onclosed = function() {
-				console.log('Web socket closed.');
-			};
-
-			query('#run').onclick = function() {
-				var sql = query('#text').value;
-				ws.send(JSON.stringify({'type': 'query', 'sql': sql}));
-			};
-
-			query('#connect').onclick = function() {
-				var msg = JSON.stringify({'type': 'connect', 'uri': 'postgres://testdb:password@localhost:5432/testdb'});
-				ws.send(msg);
-			};
-
-			query('#close').onclick = function() {
-				ws.send(JSON.stringify({'type': 'close'}));
-			};
-
-			query('#load-schema').onclick = function() {
-				ws.send(JSON.stringify({'type': 'load-schema'}));
-			};
-		}
-	</script>
-	<style>
-		#text { display: block; width: 600px; height: 600px;}
-	</style>
+	<title>Sole</title>
+    <link rel="stylesheet" href="/webroot/codemirror/lib/codemirror.css" />
+    <script src="/webroot/codemirror/lib/codemirror.js"></script>
+    <script src="/webroot/codemirror/mode/sql/sql.js"></script>
+    <link rel="stylesheet" href="/webroot/codemirror/addon/hint/show-hint.css" />
+    <script src="/webroot/codemirror/addon/hint/show-hint.js"></script>
+    <script src="/webroot/sql-hint.js"></script>
+    <script src="/webroot/sole.js"></script>
+    <link rel="stylesheet" href="/webroot/sole.css" />
 </head>
 <body>
-	<div>
-		<button id="connect">Connect</button>
-		<button id="load-schema">Load Schema</button>
-		<button id="run">Run</button>
-		<button id="close">Close</button>
-	</div>
-	<textarea id="text"></textarea>	
+	<div id="history"></div>
+	<div id="editor"></div>
 </body>
 </html>
